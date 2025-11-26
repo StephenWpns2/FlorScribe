@@ -390,6 +390,7 @@ export default function Dashboard() {
                   </button>
                 </div>
                 <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-600"><strong>Phone:</strong></p>
                     <p className="text-gray-900">{selectedPatient.phoneNumber}</p>
