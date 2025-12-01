@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
 import Session from './pages/Session';
+import Pricing from './pages/Pricing';
 import './index.css';
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
         <Route path="/login" element={<Navigate to="/auth" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/session" element={<Session />} />
+        <Route path="/pricing" element={<Pricing />} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Router>

@@ -105,7 +105,6 @@ export class TranscriptsController {
     redactedItems = [...redactedItems, ...patternResult.redactedItems];
 
     // Log the redaction action
-    const user = (request as any)?.user;
     await this.auditService.log({
       userId: user?.id || user?.userId,
       userEmail: user?.email,

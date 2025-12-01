@@ -5,6 +5,7 @@ import patientsService from '../services/patients';
 import type { Patient, CreatePatientDto, UpdatePatientDto } from '../types/patient';
 import PatientForm from '../components/PatientForm';
 import FileUpload from '../components/FileUpload';
+import UsageDisplay from '../components/UsageDisplay';
 
 interface User {
   email: string;
@@ -210,6 +211,21 @@ export default function Dashboard() {
               </h1>
             </div>
             <div className="flex items-center">
+              <button
+                onClick={() => navigate('/pricing')}
+                className="mr-4 px-4 py-2 rounded-md font-medium transition-colors border-2"
+                style={{ borderColor: '#42D7D7', color: '#42D7D7' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#42D7D7';
+                  e.currentTarget.style.color = 'white';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'white';
+                  e.currentTarget.style.color = '#42D7D7';
+                }}
+              >
+                Pricing
+              </button>
               <span className="mr-4" style={{ color: '#42D7D7' }}>{user?.email}</span>
               <button
                 onClick={handleLogout}
@@ -227,6 +243,9 @@ export default function Dashboard() {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
+          {/* Usage Display */}
+          <UsageDisplay />
+
           {/* View Toggle */}
           <div className="mb-6 flex gap-2">
             <button

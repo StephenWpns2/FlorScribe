@@ -6,6 +6,7 @@ import { AssemblyAI } from 'assemblyai';
 import { Session, SessionStatus } from './entities/session.entity';
 import { PatientsService } from '../patients/patients.service';
 import { TranscriptsService } from '../transcripts/transcripts.service';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 
 @Injectable()
 export class SessionsService {
@@ -17,6 +18,7 @@ export class SessionsService {
     private patientsService: PatientsService,
     private transcriptsService: TranscriptsService,
     private configService: ConfigService,
+    private subscriptionsService: SubscriptionsService,
   ) {}
 
   async create(sessionData: Partial<Session>): Promise<Session> {
@@ -78,7 +80,13 @@ export class SessionsService {
     endedAt?: Date,
   ): Promise<Session> {
     await this.sessionsRepository.update(id, { status, endedAt });
-    return this.findById(id);
+    const session = await this.findById(id);
+    
+    // If session is ending, we could track usage here
+    // But audio usage is tracked when audio is processed via webhook
+    // So we don't need to do anything here
+    
+    return session;
   }
 
   /**
@@ -115,6 +123,32 @@ export class SessionsService {
       const webhookUrl = `${baseUrl}/api/sessions/webhook/assemblyai?session_id=${sessionId}`;
 
       this.logger.log(`Submitting transcription with webhook: ${webhookUrl}`);
+
+      // Calculate audio duration for usage tracking
+      const audioHours = await this.subscriptionsService.calculateAudioDurationFromBuffer(
+        audioBuffer,
+        mimeType,
+      );
+
+      // Check audio limit before processing
+      try {
+        const limitCheck = await this.subscriptionsService.checkAudioLimit(session.userId, audioHours);
+        if (!limitCheck.allowed) {
+          this.logger.warn(
+            `Audio limit exceeded for user ${session.userId}. Current: ${limitCheck.currentUsage}, Limit: ${limitCheck.limit}`,
+          );
+          throw new Error(
+            `Audio limit exceeded. You have used ${limitCheck.currentUsage.toFixed(2)} of ${limitCheck.limit} hours. Please upgrade your plan.`,
+          );
+        }
+      } catch (error) {
+        // If it's a ForbiddenException, rethrow it
+        if (error.message.includes('limit exceeded')) {
+          throw error;
+        }
+        // Otherwise, log and continue (user might not have subscription yet)
+        this.logger.warn(`Could not check audio limit: ${error.message}`);
+      }
 
       // Submit transcription job with webhook (don't wait for completion)
       const transcript = await assemblyaiClient.transcripts.submit({
@@ -183,6 +217,17 @@ export class SessionsService {
       if (!transcript || transcript.status !== 'completed') {
         this.logger.error(`Failed to fetch completed transcript ${payload.transcript_id}`);
         return { status: 'error', message: 'Failed to fetch transcript' };
+      }
+
+      // Track audio usage - use actual duration from AssemblyAI if available
+      if (transcript.audio_duration !== undefined && transcript.audio_duration !== null) {
+        const audioHours = transcript.audio_duration / 3600; // Convert seconds to hours
+        try {
+          await this.subscriptionsService.incrementAudioUsage(session.userId, audioHours);
+          this.logger.log(`Tracked ${audioHours.toFixed(2)} hours of audio usage for user ${session.userId}`);
+        } catch (error) {
+          this.logger.warn(`Failed to track audio usage: ${error.message}`);
+        }
       }
 
       // Update transcripts with accurate speaker labels

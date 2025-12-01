@@ -4,7 +4,10 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
+import { UserSubscription } from '../../subscriptions/entities/user-subscription.entity';
 
 @Entity('users')
 export class User {
@@ -25,6 +28,16 @@ export class User {
 
   @Column({ name: 'is_verified', default: false })
   isVerified: boolean;
+
+  @Column({ name: 'stripe_customer_id', nullable: true })
+  stripeCustomerId: string | null;
+
+  @Column({ name: 'subscription_id', nullable: true })
+  subscriptionId: number | null;
+
+  @OneToOne(() => UserSubscription, { nullable: true })
+  @JoinColumn({ name: 'subscription_id' })
+  subscription: UserSubscription | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;

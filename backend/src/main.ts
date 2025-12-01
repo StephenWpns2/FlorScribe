@@ -3,9 +3,12 @@ import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { WsAdapter } from '@nestjs/platform-ws';
+import * as express from 'express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    rawBody: true,
+  });
   
   // Use WebSocket adapter (ws) instead of Socket.IO
   app.useWebSocketAdapter(new WsAdapter(app));
@@ -61,6 +64,9 @@ async function bootstrap() {
   app.setGlobalPrefix('api', {
     exclude: ['/', '/health'],
   });
+
+  // Configure raw body for Stripe webhook (must be after global prefix to match /api/subscriptions/webhook)
+  app.use('/api/subscriptions/webhook', express.raw({ type: 'application/json' }));
   
   const port = process.env.PORT || 8000;
   await app.listen(port);

@@ -19,9 +19,9 @@ export class AuditController {
 
   @Get('phi-access')
   async getPHIAccess(
+    @Query('limit', new DefaultValuePipe(1000), ParseIntPipe) limit: number,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Query('limit', new DefaultValuePipe(1000), ParseIntPipe) limit: number,
   ) {
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;

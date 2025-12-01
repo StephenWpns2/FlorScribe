@@ -2,12 +2,14 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SOAPNote } from './entities/soap-note.entity';
 import { ClinicalExtraction } from '../clinical/entities/clinical-extraction.entity';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import OpenAI from 'openai';
 
 @Injectable()
@@ -20,6 +22,7 @@ export class SoapService {
     @InjectRepository(ClinicalExtraction)
     private clinicalExtractionRepository: Repository<ClinicalExtraction>,
     private configService: ConfigService,
+    private subscriptionsService: SubscriptionsService,
   ) {
     const openaiApiKey = this.configService.get<string>('OPENAI_API_KEY') || '';
     if (!openaiApiKey) {
@@ -31,15 +34,25 @@ export class SoapService {
   }
 
   async compose(
-    extractionId?: number,
-    clinicalExtraction?: any,
-    transcriptText?: string,
+    extractionId: number | undefined,
+    clinicalExtraction: any | undefined,
+    transcriptText: string | undefined,
+    userId: number,
   ): Promise<{ soap_note_id: number; html_content: string; billing_codes: any; created_at: string }> {
     console.log('[SOAP Service] compose() called with:', {
       extractionId,
       hasClinicalExtraction: !!clinicalExtraction,
       transcriptTextLength: transcriptText?.length || 0,
+      userId,
     });
+
+    // Check notes limit before creating SOAP note
+    const limitCheck = await this.subscriptionsService.checkNotesLimit(userId, 1);
+    if (!limitCheck.allowed) {
+      throw new ForbiddenException(
+        `Notes limit exceeded. You have used ${limitCheck.currentUsage} of ${limitCheck.limit} notes. Please upgrade your plan.`,
+      );
+    }
 
     if (!extractionId && !clinicalExtraction) {
       console.error('[SOAP Service] Error: Neither extraction_id nor clinical_extraction provided');
@@ -173,6 +186,10 @@ Generate a complete, professional SOAP note in HTML format with inline styles.`;
 
       console.log('[SOAP Service] Saving SOAP note to database...');
       const savedNote = await this.soapNoteRepository.save(soapNote);
+      
+      // Track usage after successful creation
+      await this.subscriptionsService.incrementNotesUsage(userId, 1);
+      
       console.log('[SOAP Service] SOAP note saved successfully:', {
         soapNoteId: savedNote.id,
         htmlContentLength: savedNote.htmlContent?.length || 0,

@@ -16,6 +16,7 @@ import { RealtimeModule } from './realtime/realtime.module';
 import { PatientsModule } from './patients/patients.module';
 import { CommonModule } from './common/common.module';
 import { AuditModule } from './audit/audit.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { EncryptionService } from './common/encryption.service';
 import { setEncryptionService } from './common/typeorm-encrypt.transformer';
 
@@ -40,6 +41,7 @@ import { setEncryptionService } from './common/typeorm-encrypt.transformer';
     AdminModule,
     RealtimeModule,
     PatientsModule,
+    SubscriptionsModule,
   ],
   controllers: [AppController],
   providers: [

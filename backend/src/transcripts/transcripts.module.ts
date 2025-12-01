@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TranscriptsService } from './transcripts.service';
 import { TranscriptsController } from './transcripts.controller';
@@ -15,7 +15,7 @@ import { PatientsModule } from '../patients/patients.module';
     AuthModule,
     CommonModule,
     AuditModule,
-    SessionsModule,
+    forwardRef(() => SessionsModule),
     PatientsModule,
   ],
   controllers: [TranscriptsController],
