@@ -44,7 +44,6 @@ export default function Auth() {
         name: fullName,
       });
 
-      // After successful registration, switch to sign in tab
       setActiveTab('signin');
       setError('');
       setFullName('');
