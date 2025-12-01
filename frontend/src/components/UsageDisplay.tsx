@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import subscriptionsService, { UsageData } from '../services/subscriptions';
+import subscriptionsService from '../services/subscriptions';
+import type { UsageData } from '../services/subscriptions';
 
 export default function UsageDisplay() {
   const [usageData, setUsageData] = useState<UsageData | null>(null);

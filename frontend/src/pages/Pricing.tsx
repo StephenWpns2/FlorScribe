@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import subscriptionsService, { SubscriptionPlan, UserSubscription } from '../services/subscriptions';
+import subscriptionsService from '../services/subscriptions';
+import type { SubscriptionPlan, UserSubscription } from '../services/subscriptions';
 
 export default function Pricing() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
@@ -87,11 +88,11 @@ export default function Pricing() {
   };
 
   const isCurrentPlan = (planType: string) => {
-    return currentSubscription?.plan.planType === planType;
+    return currentSubscription?.plan?.planType === planType;
   };
 
   const canUpgrade = (planType: string) => {
-    if (!currentSubscription) return true;
+    if (!currentSubscription?.plan) return true;
     
     const planHierarchy = { LITE: 1, PRO: 2, ENTERPRISE: 3 };
     const currentLevel = planHierarchy[currentSubscription.plan.planType as keyof typeof planHierarchy] || 0;
@@ -145,7 +146,7 @@ export default function Pricing() {
           </div>
         )}
 
-        {currentSubscription && (
+        {currentSubscription?.plan && (
           <div className="mb-8 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded max-w-2xl mx-auto text-center">
             Current Plan: <strong>{currentSubscription.plan.name}</strong>
             {currentSubscription.status === 'ACTIVE' && (
