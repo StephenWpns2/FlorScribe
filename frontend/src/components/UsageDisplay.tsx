@@ -35,6 +35,14 @@ export default function UsageDisplay() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="bg-white rounded-lg shadow-lg p-6 mb-6" style={{ border: '2px solid #42D7D7' }}>
+        <div className="text-red-600">{error}</div>
+      </div>
+    );
+  }
+
   if (!usageData || !usageData.subscription) {
     return (
       <div className="bg-white rounded-lg shadow-lg p-6 mb-6" style={{ border: '2px solid #42D7D7' }}>
