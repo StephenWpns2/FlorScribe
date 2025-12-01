@@ -9,7 +9,6 @@ const api = axios.create({
   },
 });
 
-// Add token to requests
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token');
   if (token) {
@@ -33,7 +32,8 @@ api.interceptors.response.use(
           localStorage.setItem('refresh_token', response.data.refresh_token);
           error.config.headers.Authorization = `Bearer ${response.data.access_token}`;
           return axios(error.config);
-        } catch (refreshError) {
+        } catch (refreshError: unknown) {
+          console.error('Refresh token error:', refreshError);
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
           window.location.href = '/auth';
