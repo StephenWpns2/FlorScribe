@@ -11,6 +11,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
