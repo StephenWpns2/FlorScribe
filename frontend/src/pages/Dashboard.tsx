@@ -6,6 +6,7 @@ import type { Patient, CreatePatientDto, UpdatePatientDto } from '../types/patie
 import PatientForm from '../components/PatientForm';
 import FileUpload from '../components/FileUpload';
 import UsageDisplay from '../components/UsageDisplay';
+import HIPAAComplianceBadge from '../components/HIPAAComplianceBadge';
 
 interface User {
   email: string;
@@ -205,10 +206,11 @@ export default function Dashboard() {
       <nav className="bg-white shadow" style={{ borderBottom: '2px solid #42D7D7' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex items-center">
+            <div className="flex items-center gap-4">
               <h1 className="text-xl font-bold" style={{ color: '#42D7D7' }}>
                 Flor Scribe
               </h1>
+              <HIPAAComplianceBadge size="small" showText={true} />
             </div>
             <div className="flex items-center">
               <button
@@ -243,6 +245,30 @@ export default function Dashboard() {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
+          {/* HIPAA Compliance Banner */}
+          <div className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg p-4 flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-3">
+              <HIPAAComplianceBadge size="large" showText={true} />
+              <div>
+                <h3 className="font-semibold text-green-800 text-lg">HIPAA Compliant</h3>
+                <p className="text-sm text-green-700 mt-1">
+                  Your Protected Health Information is encrypted and secured according to HIPAA standards
+                </p>
+              </div>
+            </div>
+            <a
+              href="#hipaa-info"
+              className="text-sm text-green-600 hover:text-green-800 underline font-medium"
+              onClick={(e) => {
+                e.preventDefault();
+                // Could link to documentation or show a modal
+                alert('HIPAA Compliance: All PHI is encrypted at rest (AES-256-GCM), transmitted over HTTPS/TLS, and all access is audited. See HIPAA_COMPLIANCE_DOCUMENTATION.md for details.');
+              }}
+            >
+              Learn More
+            </a>
+          </div>
+
           {/* Usage Display */}
           <UsageDisplay />
 
