@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsDateString,
   IsObject,
+  ValidateIf,
 } from 'class-validator';
 
 export class UpdatePatientDto {
@@ -20,6 +21,7 @@ export class UpdatePatientDto {
   lastName?: string;
 
   @IsOptional()
+  @ValidateIf((o) => o.email !== undefined && o.email !== null && o.email !== '')
   @IsEmail()
   email?: string;
 
