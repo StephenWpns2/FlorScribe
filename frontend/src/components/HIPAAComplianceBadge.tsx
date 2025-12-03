@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface HIPAAComplianceBadgeProps {
   size?: 'small' | 'medium' | 'large';
   showText?: boolean;
