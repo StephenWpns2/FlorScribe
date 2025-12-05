@@ -7,6 +7,9 @@ import TranscriptionView from '../components/TranscriptionView';
 import ClinicalView from '../components/ClinicalView';
 import SOAPViewer from '../components/SOAPViewer';
 import EHRExport from '../components/EHRExport';
+import ProcessingMessage from '../components/ProcessingMessage';
+import UserProfile from '../components/UserProfile';
+import FlorenceLogo from '../components/FlorenceLogo';
 import type { TranscriptSegment, TranscriptUpdatePayload } from '../types/transcript';
 import { useSpeakerAllocator } from '../hooks/useSpeakerAllocator';
 import { createSegment, rebuildSegmentsFromText, transcriptToSegment } from '../utils/transcriptSegments';
@@ -15,6 +18,7 @@ import type { Patient } from '../types/patient';
 
 interface User {
   email: string;
+  name?: string | null;
 }
 
 export default function Session() {
@@ -39,6 +43,7 @@ export default function Session() {
   const [activeTab, setActiveTab] = useState<'transcription' | 'clinical' | 'soap' | 'export'>('transcription');
   const [isExtractingClinical, setIsExtractingClinical] = useState(false);
   const [isGeneratingSOAP, setIsGeneratingSOAP] = useState(false);
+  const [isExportingEHR, setIsExportingEHR] = useState(false);
   
   const navigate = useNavigate();
   const audioRecorderRef = useRef<AudioRecorder | null>(null);
@@ -427,13 +432,27 @@ export default function Session() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F0FDFF' }}>
+      {/* Processing Messages */}
+      <ProcessingMessage
+        message="Extracting clinical data from transcript..."
+        isProcessing={isExtractingClinical}
+      />
+      <ProcessingMessage
+        message="Generating SOAP note from clinical data..."
+        isProcessing={isGeneratingSOAP}
+      />
+      <ProcessingMessage
+        message="Exporting to EHR system..."
+        isProcessing={isExportingEHR}
+      />
+      
       <nav className="bg-white shadow" style={{ borderBottom: '2px solid #42D7D7' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex items-center">
+            <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
               <button
                 onClick={handleBackToDashboard}
-                className="mr-4 px-3 py-1 rounded-md text-sm font-medium transition-colors"
+                className="hidden md:block px-3 py-1 rounded-md text-sm font-medium transition-colors"
                 style={{ color: '#42D7D7', border: '1px solid #42D7D7' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = '#42D7D7';
@@ -446,21 +465,49 @@ export default function Session() {
               >
                 ← Back to Dashboard
               </button>
-              <h1 className="text-xl font-bold" style={{ color: '#42D7D7' }}>
-                Session {sessionId ? `#${sessionId}` : 'Recording'}
+              <button
+                onClick={handleBackToDashboard}
+                className="md:hidden px-2 py-1 rounded-md text-sm font-medium transition-colors"
+                style={{ color: '#42D7D7', border: '1px solid #42D7D7' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#42D7D7';
+                  e.currentTarget.style.color = 'white';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = '#42D7D7';
+                }}
+              >
+                ←
+              </button>
+              <FlorenceLogo size="small" showSlogan={false} />
+              <h1 className="text-lg md:text-xl font-bold truncate" style={{ color: '#42D7D7' }}>
+                <span className="hidden sm:inline">Session </span>{sessionId ? `#${sessionId}` : 'Recording'}
               </h1>
             </div>
-            <div className="flex items-center">
-              <span className="mr-4" style={{ color: '#42D7D7' }}>{user?.email}</span>
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 rounded-md text-white font-medium transition-colors"
-                style={{ backgroundColor: '#42D7D7' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3BC5C5'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#42D7D7'}
-              >
-                Logout
-              </button>
+            <div className="flex items-center gap-4">
+              {/* Desktop: Show user profile and logout */}
+              <div className="hidden md:flex items-center gap-4">
+                <UserProfile user={user} size="medium" />
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 rounded-md text-white font-medium transition-colors"
+                  style={{ backgroundColor: '#42D7D7' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3BC5C5'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#42D7D7'}
+                >
+                  Logout
+                </button>
+              </div>
+              {/* Mobile: Show only user profile with menu */}
+              <div className="md:hidden">
+                <UserProfile 
+                  user={user} 
+                  size="medium" 
+                  showMobileMenu={true}
+                  onLogoutClick={handleLogout}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -756,7 +803,11 @@ export default function Session() {
               )}
               {activeTab === 'export' && (
                 soapNote && typeof soapNote.soap_note_id === 'number' ? (
-                  <EHRExport soapNoteId={soapNote.soap_note_id} />
+                  <EHRExport
+                    soapNoteId={soapNote.soap_note_id}
+                    onExportStart={() => setIsExportingEHR(true)}
+                    onExportEnd={() => setIsExportingEHR(false)}
+                  />
                 ) : (
                   <div className="text-center text-gray-500 py-12">
                     Generate a SOAP note to enable export options.

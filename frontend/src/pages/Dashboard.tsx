@@ -7,9 +7,12 @@ import PatientForm from '../components/PatientForm';
 import FileUpload from '../components/FileUpload';
 import UsageDisplay from '../components/UsageDisplay';
 import HIPAAComplianceBadge from '../components/HIPAAComplianceBadge';
+import UserProfile from '../components/UserProfile';
+import FlorenceLogo from '../components/FlorenceLogo';
 
 interface User {
   email: string;
+  name?: string | null;
   id?: number;
 }
 
@@ -40,6 +43,7 @@ export default function Dashboard() {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [patientSessions, setPatientSessions] = useState<Session[]>([]);
   const [loadingPatientSessions, setLoadingPatientSessions] = useState(false);
+  const [showHIPAAModal, setShowHIPAAModal] = useState(false);
   
   const navigate = useNavigate();
 
@@ -177,6 +181,20 @@ export default function Dashboard() {
     navigate('/session');
   };
 
+  const handleHIPAABadgeClick = () => {
+    setShowHIPAAModal(true);
+  };
+
+  // Auto-close HIPAA modal after 3 seconds
+  useEffect(() => {
+    if (showHIPAAModal) {
+      const timer = setTimeout(() => {
+        setShowHIPAAModal(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showHIPAAModal]);
+
   const handleViewSession = (sessionId: number) => {
     navigate(`/session?id=${sessionId}`);
   };
@@ -206,38 +224,52 @@ export default function Dashboard() {
       <nav className="bg-white shadow" style={{ borderBottom: '2px solid #42D7D7' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex items-center gap-4">
-              <h1 className="text-xl font-bold" style={{ color: '#42D7D7' }}>
-                Flor Scribe
-              </h1>
-              <HIPAAComplianceBadge size="small" showText={true} />
+            <div className="flex items-center gap-2 md:gap-4">
+              <FlorenceLogo size="medium" showSlogan={true} />
+              <div className="hidden md:block">
+                <HIPAAComplianceBadge size="small" showText={true} onClick={handleHIPAABadgeClick} />
+              </div>
             </div>
-            <div className="flex items-center">
-              <button
-                onClick={() => navigate('/pricing')}
-                className="mr-4 px-4 py-2 rounded-md font-medium transition-colors border-2"
-                style={{ borderColor: '#42D7D7', color: '#42D7D7' }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#42D7D7';
-                  e.currentTarget.style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'white';
-                  e.currentTarget.style.color = '#42D7D7';
-                }}
-              >
-                Pricing
-              </button>
-              <span className="mr-4" style={{ color: '#42D7D7' }}>{user?.email}</span>
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 rounded-md text-white font-medium transition-colors"
-                style={{ backgroundColor: '#42D7D7' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3BC5C5'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#42D7D7'}
-              >
-                Logout
-              </button>
+            <div className="flex items-center gap-4">
+              {/* Desktop: Show all items */}
+              <div className="hidden md:flex items-center gap-4">
+                <button
+                  onClick={() => navigate('/pricing')}
+                  className="px-4 py-2 rounded-md font-medium transition-colors border-2"
+                  style={{ borderColor: '#42D7D7', color: '#42D7D7' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#42D7D7';
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'white';
+                    e.currentTarget.style.color = '#42D7D7';
+                  }}
+                >
+                  Pricing
+                </button>
+                <UserProfile user={user} size="medium" />
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 rounded-md text-white font-medium transition-colors"
+                  style={{ backgroundColor: '#42D7D7' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3BC5C5'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#42D7D7'}
+                >
+                  Logout
+                </button>
+              </div>
+              {/* Mobile: Show only user profile with menu */}
+              <div className="md:hidden">
+                <UserProfile 
+                  user={user} 
+                  size="medium" 
+                  showMobileMenu={true}
+                  onPricingClick={() => navigate('/pricing')}
+                  onLogoutClick={handleLogout}
+                  onHIPAAClick={handleHIPAABadgeClick}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -245,29 +277,29 @@ export default function Dashboard() {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          {/* HIPAA Compliance Banner */}
-          <div className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg p-4 flex items-center justify-between shadow-sm">
-            <div className="flex items-center gap-3">
-              <HIPAAComplianceBadge size="large" showText={true} />
-              <div>
-                <h3 className="font-semibold text-green-800 text-lg">HIPAA Compliant</h3>
-                <p className="text-sm text-green-700 mt-1">
-                  Your Protected Health Information is encrypted and secured according to HIPAA standards
-                </p>
+          {/* HIPAA Compliance Modal */}
+          {showHIPAAModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 backdrop-blur-sm">
+              <div className="bg-white rounded-xl shadow-2xl p-6 max-w-2xl w-full mx-4 border-2 border-green-200 animate-fade-in">
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg p-4 flex items-center justify-between shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <HIPAAComplianceBadge size="large" showText={true} />
+                    <div>
+                      <h3 className="font-semibold text-green-800 text-lg">HIPAA Compliant</h3>
+                      <p className="text-sm text-green-700 mt-1">
+                        Your Protected Health Information is encrypted and secured according to HIPAA standards
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-700">
+                    <strong>HIPAA Compliance Details:</strong> All PHI is encrypted at rest (AES-256-GCM), transmitted over HTTPS/TLS, and all access is audited. See HIPAA_COMPLIANCE_DOCUMENTATION.md for details.
+                  </p>
+                </div>
               </div>
             </div>
-            <a
-              href="#hipaa-info"
-              className="text-sm text-green-600 hover:text-green-800 underline font-medium"
-              onClick={(e) => {
-                e.preventDefault();
-                // Could link to documentation or show a modal
-                alert('HIPAA Compliance: All PHI is encrypted at rest (AES-256-GCM), transmitted over HTTPS/TLS, and all access is audited. See HIPAA_COMPLIANCE_DOCUMENTATION.md for details.');
-              }}
-            >
-              Learn More
-            </a>
-          </div>
+          )}
 
           {/* Usage Display */}
           <UsageDisplay />

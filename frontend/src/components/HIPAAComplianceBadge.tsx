@@ -2,12 +2,14 @@ interface HIPAAComplianceBadgeProps {
   size?: 'small' | 'medium' | 'large';
   showText?: boolean;
   className?: string;
+  onClick?: () => void;
 }
 
 export default function HIPAAComplianceBadge({ 
   size = 'medium', 
   showText = true,
-  className = '' 
+  className = '',
+  onClick 
 }: HIPAAComplianceBadgeProps) {
   const sizeClasses = {
     small: 'w-6 h-6',
@@ -23,8 +25,9 @@ export default function HIPAAComplianceBadge({
 
   return (
     <div 
-      className={`flex items-center gap-2 ${className}`}
+      className={`flex items-center gap-2 ${onClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''} ${className}`}
       title="HIPAA Compliant - Protected Health Information is encrypted and secured"
+      onClick={onClick}
     >
       {/* HIPAA Shield Icon */}
       <svg

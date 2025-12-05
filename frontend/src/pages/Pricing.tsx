@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import subscriptionsService from '../services/subscriptions';
 import type { SubscriptionPlan, UserSubscription } from '../services/subscriptions';
+import FlorenceLogo from '../components/FlorenceLogo';
 
 export default function Pricing() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
@@ -115,19 +116,18 @@ export default function Pricing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold" style={{ color: '#42D7D7' }}>
-                Flor Scribe
-              </h1>
+              <FlorenceLogo size="medium" showSlogan={false} />
             </div>
             <div className="flex items-center">
               <button
                 onClick={() => navigate('/dashboard')}
-                className="px-4 py-2 rounded-md text-white font-medium transition-colors"
+                className="px-3 md:px-4 py-2 rounded-md text-sm md:text-base text-white font-medium transition-colors"
                 style={{ backgroundColor: '#42D7D7' }}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3BC5C5'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#42D7D7'}
               >
-                Dashboard
+                <span className="hidden sm:inline">Dashboard</span>
+                <span className="sm:hidden">Home</span>
               </button>
             </div>
           </div>

@@ -3,9 +3,11 @@ import api from '../services/api';
 
 interface EHRExportProps {
   soapNoteId: number;
+  onExportStart?: () => void;
+  onExportEnd?: () => void;
 }
 
-export default function EHRExport({ soapNoteId }: EHRExportProps) {
+export default function EHRExport({ soapNoteId, onExportStart, onExportEnd }: EHRExportProps) {
   const [ehrProvider, setEhrProvider] = useState('epic');
   const [patientId, setPatientId] = useState('');
   const [practitionerId, setPractitionerId] = useState('');
@@ -19,6 +21,7 @@ export default function EHRExport({ soapNoteId }: EHRExportProps) {
     setLoading(true);
     setError('');
     setResult(null);
+    onExportStart?.();
 
     try {
       const response = await api.post('/api/export', {
@@ -34,6 +37,7 @@ export default function EHRExport({ soapNoteId }: EHRExportProps) {
       setError(err.response?.data?.detail || 'Export failed');
     } finally {
       setLoading(false);
+      onExportEnd?.();
     }
   };
 
