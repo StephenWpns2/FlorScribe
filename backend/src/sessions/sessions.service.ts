@@ -119,7 +119,7 @@ export class SessionsService {
       // Get webhook URL from environment
       const baseUrl = this.configService.get<string>('WEBHOOK_BASE_URL') || 
                      this.configService.get<string>('BACKEND_URL') || 
-                     'http://localhost:8000';
+                     'https://florence-transcribe-backend.onrender.com';
       const webhookUrl = `${baseUrl}/api/sessions/webhook/assemblyai?session_id=${sessionId}`;
 
       this.logger.log(`Submitting transcription with webhook: ${webhookUrl}`);

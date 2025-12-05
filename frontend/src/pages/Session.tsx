@@ -50,7 +50,7 @@ export default function Session() {
   const wsClientRef = useRef<WebSocketClient | null>(null);
   const { assignSpeaker, resetSpeakers } = useSpeakerAllocator();
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://florence-transcribe-backend.onrender.com';
   const WS_URL = API_BASE_URL.replace('http', 'ws') + '/api/realtime/ws';
 
   // Auth Check
@@ -248,6 +248,7 @@ export default function Session() {
       
       // Create WebSocket client with base URL, token, and query params
       // The client will construct: ws://localhost:8000/api/realtime/ws?token=...&patient_id=...&patient_name=...
+      // The client will construct: ws://https://florence-transcribe-backend.onrender.com/api/realtime/ws?token=...&patient_id=...&patient_name=...
       wsClientRef.current = new WebSocketClient(WS_URL, token, queryParams);
 
       wsClientRef.current.connect(
