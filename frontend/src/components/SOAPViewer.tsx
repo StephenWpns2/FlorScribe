@@ -1,11 +1,35 @@
 import { useState } from 'react';
 
+interface SOAPNote {
+  soap_note_id: number;
+  html_content: string;
+  billing_codes?: {
+    icd10?: Array<string | { code: string; description?: string }>;
+    cpt?: Array<string | { code: string; description?: string }>;
+  };
+}
+
 interface SOAPViewerProps {
-  soapNote: any;
+  soapNote: SOAPNote;
 }
 
 export default function SOAPViewer({ soapNote }: SOAPViewerProps) {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+  const renderCodes = (codes: Array<string | { code: string; description?: string }>) => (
+    <ul className="list-disc list-inside space-y-1">
+      {codes.map((code, idx) => {
+        const val = typeof code === 'string' ? code : code?.code || '';
+        const desc = typeof code === 'string' ? '' : code?.description || '';
+        return (
+          <li key={idx} className="text-sm">
+            {val}
+            {desc ? `: ${desc}` : ''}
+          </li>
+        );
+      })}
+    </ul>
+  );
 
   const handleDownloadHTML = () => {
     const blob = new Blob([soapNote.html_content], { type: 'text/html' });
@@ -102,25 +126,13 @@ export default function SOAPViewer({ soapNote }: SOAPViewerProps) {
             {soapNote.billing_codes.icd10 && soapNote.billing_codes.icd10.length > 0 && (
               <div>
                 <h5 className="font-medium mb-2">ICD-10 Codes</h5>
-                <ul className="list-disc list-inside space-y-1">
-                  {soapNote.billing_codes.icd10.map((code: any, idx: number) => (
-                    <li key={idx} className="text-sm">
-                      {code.code}: {code.description}
-                    </li>
-                  ))}
-                </ul>
+                {renderCodes(soapNote.billing_codes.icd10)}
               </div>
             )}
             {soapNote.billing_codes.cpt && soapNote.billing_codes.cpt.length > 0 && (
               <div>
                 <h5 className="font-medium mb-2">CPT Codes</h5>
-                <ul className="list-disc list-inside space-y-1">
-                  {soapNote.billing_codes.cpt.map((code: any, idx: number) => (
-                    <li key={idx} className="text-sm">
-                      {code.code}: {code.description}
-                    </li>
-                  ))}
-                </ul>
+                {renderCodes(soapNote.billing_codes.cpt)}
               </div>
             )}
           </div>
