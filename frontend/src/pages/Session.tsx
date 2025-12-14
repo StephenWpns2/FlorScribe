@@ -15,6 +15,7 @@ import { useSpeakerAllocator } from '../hooks/useSpeakerAllocator';
 import { createSegment, rebuildSegmentsFromText, transcriptToSegment } from '../utils/transcriptSegments';
 import patientsService from '../services/patients';
 import type { Patient } from '../types/patient';
+import type { SOAPNote } from '../types/soap';
 
 interface User {
   email: string;
@@ -39,7 +40,7 @@ export default function Session() {
   const [segments, setSegments] = useState<TranscriptSegment[]>([]);
   const [interimSegment, setInterimSegment] = useState<TranscriptSegment | null>(null);
   const [clinicalData, setClinicalData] = useState<Record<string, unknown> | null>(null);
-  const [soapNote, setSoapNote] = useState<Record<string, unknown> | null>(null);
+  const [soapNote, setSoapNote] = useState<SOAPNote | null>(null);
   const [activeTab, setActiveTab] = useState<'transcription' | 'clinical' | 'soap' | 'export'>('transcription');
   const [isExtractingClinical, setIsExtractingClinical] = useState(false);
   const [isGeneratingSOAP, setIsGeneratingSOAP] = useState(false);
@@ -417,7 +418,7 @@ export default function Session() {
     setIsGeneratingSOAP(true);
     setError('');
     try {
-      const response = await api.post('/api/compose', {
+      const response = await api.post<SOAPNote>('/api/compose', {
         clinical_extraction: clinicalData,
         transcript_text: transcriptText,
       });

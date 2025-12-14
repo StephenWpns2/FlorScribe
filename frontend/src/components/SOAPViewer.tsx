@@ -1,13 +1,5 @@
 import { useState } from 'react';
-
-interface SOAPNote {
-  soap_note_id: number;
-  html_content: string;
-  billing_codes?: {
-    icd10?: Array<string | { code: string; description?: string }>;
-    cpt?: Array<string | { code: string; description?: string }>;
-  };
-}
+import type { SOAPNote } from '../types/soap';
 
 interface SOAPViewerProps {
   soapNote: SOAPNote;
