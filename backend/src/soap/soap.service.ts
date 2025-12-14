@@ -293,6 +293,18 @@ Generate a complete, professional SOAP note in HTML format with inline styles.`;
   }
 
   private formatHtml(html: string): string {
+    // Strip Markdown code fences that may wrap the HTML (e.g., ```html ... ```).
+    const fencePattern = /```(?:html)?/gi;
+    if (fencePattern.test(html)) {
+      html = html.replace(fencePattern, '').trim();
+    }
+
+    // If full HTML document provided, keep body content only for embedding.
+    const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+    if (bodyMatch && bodyMatch[1]) {
+      html = bodyMatch[1].trim();
+    }
+
     if (!html.trim().startsWith('<')) {
       html = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">${html}</div>`;
     }

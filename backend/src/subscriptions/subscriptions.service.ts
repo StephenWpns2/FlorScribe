@@ -77,9 +77,21 @@ export class SubscriptionsService implements OnModuleInit {
   }
 
   async getUserSubscription(userId: number): Promise<UserSubscription | null> {
+    // Prefer the latest active subscription; fall back to latest any status.
+    const active = await this.subscriptionRepository.findOne({
+      where: { userId, status: SubscriptionStatus.ACTIVE },
+      relations: ['plan'],
+      order: { createdAt: 'DESC' },
+    });
+
+    if (active) {
+      return active;
+    }
+
     return this.subscriptionRepository.findOne({
       where: { userId },
       relations: ['plan'],
+      order: { createdAt: 'DESC' },
     });
   }
 
@@ -226,10 +238,15 @@ export class SubscriptionsService implements OnModuleInit {
     limit: number | null;
     remaining: number | null;
   }> {
+    // Temporary: allow all usage without requiring payment/subscription.
     const current = await this.getCurrentUsage(userId);
-
     if (!current.subscription) {
-      throw new ForbiddenException('No active subscription');
+      return {
+        allowed: true,
+        currentUsage: additionalHours,
+        limit: null,
+        remaining: null,
+      };
     }
 
     const limit = current.audioHoursLimit;
@@ -259,10 +276,15 @@ export class SubscriptionsService implements OnModuleInit {
     limit: number | null;
     remaining: number | null;
   }> {
+    // Temporary: allow all usage without requiring payment/subscription.
     const current = await this.getCurrentUsage(userId);
-
     if (!current.subscription) {
-      throw new ForbiddenException('No active subscription');
+      return {
+        allowed: true,
+        currentUsage: additionalNotes,
+        limit: null,
+        remaining: null,
+      };
     }
 
     const limit = current.notesLimit;

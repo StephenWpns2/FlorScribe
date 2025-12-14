@@ -17,34 +17,7 @@ export class PlanGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredPlan = this.reflector.get<string>('requiredPlan', context.getHandler());
-    
-    if (!requiredPlan) {
-      return true; // No plan requirement
-    }
-
-    const request = context.switchToHttp().getRequest();
-    const user = request.user;
-
-    if (!user) {
-      throw new ForbiddenException('Authentication required');
-    }
-
-    const subscription = await this.subscriptionsService.getUserSubscription(user.id);
-    
-    if (!subscription || subscription.status !== 'ACTIVE') {
-      throw new ForbiddenException('Active subscription required');
-    }
-
-    // Check if user's plan meets the requirement
-    const planHierarchy = { LITE: 1, PRO: 2, ENTERPRISE: 3 };
-    const userPlanLevel = planHierarchy[subscription.plan.planType] || 0;
-    const requiredPlanLevel = planHierarchy[requiredPlan] || 0;
-
-    if (userPlanLevel < requiredPlanLevel) {
-      throw new ForbiddenException(`Plan upgrade required: ${requiredPlan} plan needed`);
-    }
-
+    // Temporary: allow access regardless of plan/subscription.
     return true;
   }
 }
